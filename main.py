@@ -1,13 +1,14 @@
 import aiogram
 import datetime
 import logging
+import requests
 
 from aiogram.utils.executor import start_polling
 from aiogram import Bot, Dispatcher
 from aiogram.bot import api
 from aiogram.dispatcher.filters import Command, Text
 
-from config import TOKEN, PATCHED_URL
+from config import TOKEN, PATCHED_URL, KINOPOISK_TOKEN
 from constants import greetings, genres
 from utils import get_name, get_greetings, keyboard
 
@@ -24,7 +25,7 @@ async def start_command(msg):
     user = get_name(msg)
     logger.info(f"Пользователь {user} (@{msg.from_user.username}) запустил команду: {msg.text}")
 
-    welcome_msg = f"Привет, {user}! 👋\n\nЯ бот, который поможет тебе выбрать фильм на вечер! 🍻\n\nНапиши мне приветствие, заполни короткую анкету, и я покажу тебе варианты!"
+    welcome_msg = f"Привет, {user}! 👋\n\nЯ бот, который поможет тебе выбрать фильм на вечер! 🎬\n\nНапиши мне приветствие, заполни короткую анкету, и я покажу тебе варианты!"
     await msg.answer(welcome_msg, reply_markup=keyboard)
 
     logger.info(f"Отправил приветственное сообщение пользователю {user}")
@@ -52,9 +53,11 @@ async def mood_callback(query):
 
     if data == 'комедия':
         logger.info(f"Рекомендую комедию пользователю {user}")
-        await bot.send_message(query.from_user.id, f'я думаю, что тебе нужно винишко, {user}')
-        await bot.send_message(query.from_user.id,
-                               'смотри, что я для тебя нашел - https://edadeal.ru/moskva/offers?segment=wine')
+        await bot.send_message(query.from_user.id, f'ищу лучшие комедии для тебя, {user}')
+        r = requests.get('https://api.kinopoisk.dev/v1.4/movie?page=1&limit=1&selectFields=name&selectFields=description$selectFields=poster&sortField=externalId.imdb&sortType=-1&type=movie&status=completed&year=1990-2025&genres.name=Комедия', headers={"X-API-KEY":"{KINOPOISK_TOKEN}"})
+        kino_resp = r.json()
+        logger.info(f"Ответ кинопоиска: {kino_resp}")
+        await bot.send_message(query.from_user.id,'Смотрел уже этот шедевр?')
     elif data == 'боевик':
         logger.info(f"Рекомендую боевик пользователю {user}")
         await bot.send_message(query.from_user.id, 'для тебя сейчас самое оно - текила!')
