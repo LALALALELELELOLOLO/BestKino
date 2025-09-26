@@ -1,4 +1,4 @@
-import aiogram
+#import aiogram
 import datetime
 import logging
 
