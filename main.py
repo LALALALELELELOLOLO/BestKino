@@ -1,26 +1,24 @@
-import aiogram
-import datetime
 import logging
 import requests
 
-from aiogram.utils.executor import start_polling
 from aiogram import Bot, Dispatcher
-from aiogram.bot import api
-from aiogram.dispatcher.filters import Command, Text
+from aiogram.filters import Command
+from aiogram import F
 
 from config import TOKEN, PATCHED_URL, KINOPOISK_TOKEN
 from constants import greetings, genres
 from utils import get_name, get_greetings, keyboard
 
-setattr(api, "API_URL", PATCHED_URL)
+
+#setattr(api, "API_URL", PATCHED_URL)
 
 bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-@dp.message_handler(Command(['start', 'help']))
+@dp.message(Command('start', 'help'))
 async def start_command(msg):
     user = get_name(msg)
     logger.info(f"Пользователь {user} (@{msg.from_user.username}) запустил команду: {msg.text}")
@@ -31,7 +29,8 @@ async def start_command(msg):
     logger.info(f"Отправил приветственное сообщение пользователю {user}")
 
 
-@dp.message_handler(Text(equals=greetings, ignore_case=True))
+#@dp.message(Text(equals=greetings, ignore_case=True))
+@dp.message(F.text.in_(greetings))
 async def greet(msg):
     user = get_name(msg)
     logger.info(f"Получено приветствие от пользователя: {user} (@{msg.from_user.username}) - сообщение: '{msg.text}'")
@@ -45,7 +44,7 @@ async def greet(msg):
     logger.info(f"Показываю клавиатуру с жанрами пользователю {user}")
 
 
-@dp.callback_query_handler(Text(equals=genres))
+@dp.callback_query(F.text.in_(genres))
 async def mood_callback(query):
     data = query.data
     user = get_name(query)
@@ -54,35 +53,21 @@ async def mood_callback(query):
     if data == 'комедия':
         logger.info(f"Рекомендую комедию пользователю {user}")
         await bot.send_message(query.from_user.id, f'ищу лучшие комедии для тебя, {user}')
-        r = requests.get('https://api.kinopoisk.dev/v1.4/movie?page=1&limit=1&selectFields=name&selectFields=description$selectFields=poster&sortField=externalId.imdb&sortType=-1&type=movie&status=completed&year=1990-2025&genres.name=Комедия', headers={"X-API-KEY":"{KINOPOISK_TOKEN}"})
+        r = requests.get('https://api.kinopoisk.dev/v1.4/movie?page=1&limit=1&selectFields(0)=name&selectFields(1)=description$selectFields(2)=poster&sortField=externalId.imdb&sortType=-1&type=movie&status=completed&year=1990-2025&genres.name=Комедия', headers={"X-API-KEY":KINOPOISK_TOKEN})
         kino_resp = r.json()
         logger.info(f"Ответ кинопоиска: {kino_resp}")
         await bot.send_message(query.from_user.id,'Смотрел уже этот шедевр?')
-    elif data == 'боевик':
-        logger.info(f"Рекомендую боевик пользователю {user}")
-        await bot.send_message(query.from_user.id, 'для тебя сейчас самое оно - текила!')
-        await bot.send_message(query.from_user.id,
-                               'тут короче есть скидоны - https://edadeal.ru/moskva/offers?segment=tequila')
-    elif data == 'ужасы':
-        logger.info(f"Рекомендую ужасы пользователю {user} (сочувствую!)")
-        await bot.send_message(query.from_user.id, 'сочувствую')
-        await bot.send_message(query.from_user.id,
-                               'вот тут глянь, может что поможет - https://edadeal.ru/moskva/offers?segment=vodka')
-    elif data == 'мелодрама':
-        logger.info(f"Рекомендую мелодрамму пользователю {user}")
-        await bot.send_message(query.from_user.id, 'у меня есть кое-что для тебя')
-        await bot.send_message(query.from_user.id,
-                               'даже скидочка есть - https://edadeal.ru/moskva/offers?segment=whiskey')
-        await bot.send_message(query.from_user.id, f'{user}, только не забудь взять колу')
-    elif data == 'детектив':
-        logger.info(f"Рекомендую детектив пользователю {user}")
-        await bot.send_message(query.from_user.id, 'ну вот и отлично! сейчас будет еще лучше')
-        await bot.send_message(query.from_user.id, 'хорошего вечера тебе')
-        await bot.send_message(query.from_user.id, 'https://edadeal.ru/moskva/offers?segment=other-alcohols')
+        if kino_resp["docs"][0]["name"] is None:
+            await bot.send_message(query.from_user.id, kino_resp["docs"][0]["alternativeName"])
+        else:
+            await bot.send_message(query.from_user.id, kino_resp["docs"][0]["name"])
+        await bot.send_photo(query.from_user.id, kino_resp["docs"][0]["previewUrl"])
+        if kino_resp["docs"][0]["description"] is not None:
+            await bot.send_message(query.from_user.id, kino_resp["docs"][0]["description"])
 
 
 
-@dp.message_handler()
+@dp.message()
 async def handle_other_messages(msg):
     user = get_name(msg)
     logger.info(f"Получено неизвестное сообщение от {user} (@{msg.from_user.username}): '{msg.text}'")
@@ -91,4 +76,4 @@ async def handle_other_messages(msg):
 
 if __name__ == '__main__':
     logger.info("Запускаю бота...")
-    start_polling(dp, skip_updates=True)
+    dp.start_polling(bot)
