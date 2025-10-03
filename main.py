@@ -105,8 +105,8 @@ async def genres_callback(query):
         await bot.send_photo(query.from_user.id, kino_resp["docs"][counter]["poster"]["previewUrl"])
         if kino_resp["docs"][counter]["description"] is not None:
             await bot.send_message(query.from_user.id, kino_resp["docs"][counter]["description"])
-            if data == 'love':
-        logger.info(f"Рекомендую мелодраму {user}")
+   if data == 'love':
+         logger.info(f"Рекомендую мелодраму {user}")
         await bot.send_message(query.from_user.id, f'Давай найдем тебе классный фильм на вечер')
         r = requests.get(f'https://api.kinopoisk.dev/v1.4/movie?page=1&limit={page_size}&selectFields(0)=name&selectFields(1)=description$selectFields(2)=poster&sortField=externalId.imdb&sortType=-1&type=movie&status=completed&year=1990-2025&genres.name=мелодрама', headers={"X-API-KEY": KINOPOISK_TOKEN})
         logger.info(r.request.url)
