@@ -73,7 +73,7 @@ async def genres_callback(query):
             await bot.send_message(query.from_user.id, kino_resp["docs"][counter]["description"])
     if data == 'action':
         logger.info(f"Рекомендую Боевик {user}")
-        await bot.send_message(query.from_user.id, f'ищу топовые боевики')
+        await bot.send_message(query.from_user.id, f'ищу лучшие боевики')
         r = requests.get(f'https://api.kinopoisk.dev/v1.4/movie?page=1&limit={page_size}&selectFields(0)=name&selectFields(1)=description$selectFields(2)=poster&sortField=externalId.imdb&sortType=-1&type=movie&status=completed&year=1990-2025&genres.name=боевик', headers={"X-API-KEY": KINOPOISK_TOKEN})
         logger.info(r.request.url)
         logger.info(r.request.body)
@@ -105,6 +105,41 @@ async def genres_callback(query):
         await bot.send_photo(query.from_user.id, kino_resp["docs"][counter]["poster"]["previewUrl"])
         if kino_resp["docs"][counter]["description"] is not None:
             await bot.send_message(query.from_user.id, kino_resp["docs"][counter]["description"])
+            if data == 'love':
+        logger.info(f"Рекомендую мелодраму {user}")
+        await bot.send_message(query.from_user.id, f'Давай найдем тебе классный фильм на вечер')
+        r = requests.get(f'https://api.kinopoisk.dev/v1.4/movie?page=1&limit={page_size}&selectFields(0)=name&selectFields(1)=description$selectFields(2)=poster&sortField=externalId.imdb&sortType=-1&type=movie&status=completed&year=1990-2025&genres.name=мелодрама', headers={"X-API-KEY": KINOPOISK_TOKEN})
+        logger.info(r.request.url)
+        logger.info(r.request.body)
+        logger.info(r.request.headers)
+        kino_resp = r.json()
+        logger.info(f"Ответ кинопоиска: {kino_resp}")
+        await bot.send_message(query.from_user.id, 'Самое то для хорошего вечера!')
+        if kino_resp["docs"][counter]["name"] is None:
+            await bot.send_message(query.from_user.id, kino_resp["docs"][counter]["alternativeName"])
+        else:
+            await bot.send_message(query.from_user.id, kino_resp["docs"][counter]["name"])
+        await bot.send_photo(query.from_user.id, kino_resp["docs"][counter]["poster"]["previewUrl"])
+        if kino_resp["docs"][counter]["description"] is not None:
+            await bot.send_message(query.from_user.id, kino_resp["docs"][counter]["description"])
+        if    data == 'detective':
+            logger.info(f"Рекомендую детектив {user}")
+            await bot.send_message(query.from_user.id, f'Готов к делу, Детектив {user}?')
+            r = requests.get(
+                f'https://api.kinopoisk.dev/v1.4/movie?page=1&limit={page_size}&selectFields(0)=name&selectFields(1)=description$selectFields(2)=poster&sortField=externalId.imdb&sortType=-1&type=movie&status=completed&year=1990-2025&genres.name=детективы', headers={"X-API-KEY": KINOPOISK_TOKEN})
+            logger.info(r.request.url)
+            logger.info(r.request.body)
+            logger.info(r.request.headers)
+            kino_resp = r.json()
+            logger.info(f"Ответ кинопоиска: {kino_resp}")
+            await bot.send_message(query.from_user.id, 'Раскроем это дело?')
+            if kino_resp["docs"][counter]["name"] is None:
+                await bot.send_message(query.from_user.id, kino_resp["docs"][counter]["alternativeName"])
+            else:
+                await bot.send_message(query.from_user.id, kino_resp["docs"][counter]["name"])
+            await bot.send_photo(query.from_user.id, kino_resp["docs"][counter]["poster"]["previewUrl"])
+            if kino_resp["docs"][counter]["description"] is not None:
+                await bot.send_message(query.from_user.id, kino_resp["docs"][counter]["description"])
 @dp.message()
 async def handle_other_messages(msg):
     user = get_name(msg)
