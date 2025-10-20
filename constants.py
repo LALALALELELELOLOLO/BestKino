@@ -9,4 +9,8 @@ users = {'ladno_nastya': 'Настенька',
 genres = ['comedy', 'action', 'horror',
          'love', 'detective']
 
+years = ['new', 'middle', 'old', 'too_old',]
+
+sort = ['good', 'bad']
+
 page_size = 100
