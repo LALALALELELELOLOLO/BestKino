@@ -3,9 +3,10 @@ greetings = ('здравствуй', 'привет', 'ку', 'здорово', '
              'чао', 'ciao', 'hi', 'ghbdtn', 'пр', 'hello', 'салам пополам', 'хеллоу')
 
 users = {'ladno_nastya': 'Настенька',
-         'Jasonkemry': 'Польш'}
+         'Jasonkemry': 'Польш',
+         'gpavelvladimirovich': 'уважаемый Павел Владимирович'}
 
 genres = ['comedy', 'action', 'horror',
          'love', 'detective']
 
-page_size = 20
+page_size = 100
