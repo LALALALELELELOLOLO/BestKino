@@ -63,13 +63,19 @@ async def genres_callback(query):
             sort_data = query.data
             user = get_name(query)
             logger.info(f"Пользователь {user} (@{query.from_user.username}) выбрал сортировку: {sort_data}")
+            logger.info(f"Пользователь {user} (@{query.from_user.username}) выбрал фильтры: {genre_data}, {year_data}, {sort_data}")
             r = requests.get(set_kino_filter(genre_data, year_data, sort_data), headers={"X-API-KEY": KINOPOISK_TOKEN})
             logger.info(r.request.url)
             logger.info(r.request.body)
             logger.info(r.request.headers)
             kino_resp = r.json()
             logger.info(f"Ответ кинопоиска: {kino_resp}")
-            await send_recommendation(query, bot, kino_resp, counter)
+            await send_recommendation(query, bot, kino_resp)
+
+
+
+
+
 
     # if genre_data == 'comedy':
     #     logger.info(f"Рекомендую комедию пользователю {user}")
